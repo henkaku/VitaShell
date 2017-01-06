@@ -12,8 +12,8 @@ endif()
 # Project start
 project(VitaShell)
 include("${VITASDK}/share/vita.cmake" REQUIRED)
-set(VITA_APP_NAME "VitaShell")
-set(VITA_TITLEID  "VITASHELL")
+set(VITA_APP_NAME "molecularShell")
+set(VITA_TITLEID  "MLCL00001")
 set(VITA_VERSION  "01.43")
 
 # Flags and includes
@@ -147,4 +147,5 @@ vita_create_vpk(VitaShell.vpk ${VITA_TITLEID} VitaShell.self
   FILE pkg/sce_sys/livearea/contents/bg.png sce_sys/livearea/contents/bg.png
   FILE pkg/sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
   FILE pkg/sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
+  FILE pkg/sce_sys/livearea/contents/install_button.png sce_sys/livearea/contents/install_button.png
 )
