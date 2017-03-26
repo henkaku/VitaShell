@@ -117,6 +117,7 @@ HENKAKU_RELOAD_CONFIG                = "Reload taiHEN config.txt"
 HENKAKU_RESTORE_DEFAULT_MESSAGE      = "Default settings has been successfully restored."
 HENKAKU_RELOAD_CONFIG_MESSAGE        = "taiHEN config.txt has been successfully reloaded."
 HENKAKU_UNSAFE_HOMEBREW_MESSAGE      = "Unsafe homebrews can damage your device\permanently, if they are misused, misconfigured,\or malicious.\\Please take caution when installing them."
+HENKAKU_FIRST_BOOT_MESSAGE           = "Welcome to HENkaku!\\To enable unrestricted file access, plugins,\and dangerous apps, you must enable unsafe mode\from the settings menu (Start).\\If you do not know what this means,\ignore this message and your Vita will be safe."
 
 # VitaShell settings
 VITASHELL_SETTINGS_MAIN              = "Main settings"

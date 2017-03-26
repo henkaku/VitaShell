@@ -37,6 +37,7 @@
 #include "utils.h"
 #include "sfo.h"
 #include "list_dialog.h"
+#include "first_boot.h"
 
 #include "audio/vita_audio.h"
 
@@ -77,6 +78,7 @@ static unsigned short int vita_port;
 VitaShellConfig vitashell_config;
 
 char henkaku_config_path[32];
+char henkaku_first_boot_path[32];
 
 int is_safe_mode = 0, is_molecular_shell = 0;
 
@@ -1941,6 +1943,7 @@ int main(int argc, const char *argv[]) {
 		memset(mount_point, 0, sizeof(mount_point));
 		sceAppMgrWorkDirMountById(207, titleid, mount_point);
 		sprintf(henkaku_config_path, "%s/config.bin", mount_point);
+		sprintf(henkaku_first_boot_path, "%s/first_boot.bin", mount_point);
 
 		is_molecular_shell = 1;
 	}
@@ -1966,6 +1969,9 @@ int main(int argc, const char *argv[]) {
 	// Init context menu width
 	initContextMenuWidth();
 	initTextContextMenuWidth();
+
+	// check first boot
+	check_first_boot();
 
 	// Main
 	shellMain();
