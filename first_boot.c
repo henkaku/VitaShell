@@ -22,12 +22,18 @@
 #include "language.h"
 #include "utils.h"
 
-#define VITASHELL_VERSION_FILE "ux0:VitaShell/internal/version.bin"
-
 void check_first_boot(void) {
 	if (!is_molecular_shell) {
 		return;
 	}
+
+	// HENkaku first boot path (ux0:temp/app_work/MLCL00001/rec/first_boot.bin)
+	char mount_point[16];
+	memset(mount_point, 0, sizeof(mount_point));
+	sceAppMgrWorkDirMountById(207, vitashell_titleid, mount_point);
+	
+	char henkaku_first_boot_path[32];
+	sprintf(henkaku_first_boot_path, "%s/first_boot.bin", mount_point);
 
 	uint32_t not_first_boot = 0;
 	ReadFile(henkaku_first_boot_path, &not_first_boot, sizeof(not_first_boot));
@@ -39,4 +45,6 @@ void check_first_boot(void) {
 		not_first_boot = 1;
 	}
 	WriteFile(henkaku_first_boot_path, &not_first_boot, sizeof(not_first_boot));
+	
+	sceAppMgrUmount(mount_point);
 }

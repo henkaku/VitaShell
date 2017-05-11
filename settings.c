@@ -26,8 +26,6 @@
 #include "ime_dialog.h"
 #include "utils.h"
 
-#include "henkaku_config.h"
-
 /*
 	* HENkaku settings *
 	- Enable PSN spoofing
@@ -49,17 +47,13 @@
 */
 
 int taiReloadConfig();
-int henkaku_reload_config();
 
 void taihenReloadConfig();
-void henkakuRestoreDefaultSettings();
 void rebootDevice();
 void shutdownDevice();
 void suspendDevice();
 
 static int changed = 0;
-
-static HENkakuConfig henkaku_config;
 
 static char spoofed_version[6];
 
@@ -67,16 +61,13 @@ static SettingsMenuEntry *settings_menu_entries = NULL;
 static int n_settings_entries = 0;
 
 static ConfigEntry settings_entries[] = {
-	{ "DISABLE_AUTOUPDATE", CONFIG_TYPE_BOOLEAN, (int *)&vitashell_config.disable_autoupdate }
+	{ "USBDEVICE", CONFIG_TYPE_DECIMAL, (int *)&vitashell_config.usbdevice },
+	{ "SELECT_BUTTON", CONFIG_TYPE_DECIMAL, (int *)&vitashell_config.select_button },
+	{ "DISABLE_AUTOUPDATE", CONFIG_TYPE_BOOLEAN, (int *)&vitashell_config.disable_autoupdate },
 };
 
 SettingsMenuOption henkaku_settings[] = {
-	{ HENKAKU_ENABLE_PSN_SPOOFING,		SETTINGS_OPTION_TYPE_BOOLEAN, NULL, NULL, 0, &henkaku_config.use_psn_spoofing },
-	{ HENKAKU_ENABLE_UNSAFE_HOMEBREW,	SETTINGS_OPTION_TYPE_BOOLEAN, NULL, NULL, 0, &henkaku_config.allow_unsafe_hb },
-	{ HENKAKU_ENABLE_VERSION_SPOOFING,	SETTINGS_OPTION_TYPE_BOOLEAN, NULL, NULL, 0, &henkaku_config.use_spoofed_version },
-	{ HENKAKU_SPOOFED_VERSION,			SETTINGS_OPTION_TYPE_STRING, NULL, spoofed_version, sizeof(spoofed_version) - 1, NULL },
-	{ HENKAKU_RESTORE_DEFAULT_SETTINGS,	SETTINGS_OPTION_TYPE_CALLBACK, (void *)henkakuRestoreDefaultSettings, NULL, 0, NULL },
-	{ HENKAKU_RELOAD_CONFIG,			SETTINGS_OPTION_TYPE_CALLBACK, (void *)taihenReloadConfig, NULL, 0, NULL },
+	{ HENKAKU_RELOAD_CONFIG, SETTINGS_OPTION_TYPE_CALLBACK, (void *)taihenReloadConfig, NULL, 0, NULL },
 };
 
 SettingsMenuOption main_settings[] = {
@@ -135,16 +126,6 @@ void suspendDevice() {
 	scePowerRequestSuspend();
 }
 
-void henkakuRestoreDefaultSettings() {
-	memset(&henkaku_config, 0, sizeof(HENkakuConfig));
-	henkaku_config.use_psn_spoofing = 1;
-	henkaku_config.use_spoofed_version = 1;
-	strcpy(spoofed_version, HENKAKU_DEFAULT_VERSION_STRING);
-	changed = 1;
-
-	infoDialog(language_container[HENKAKU_RESTORE_DEFAULT_MESSAGE]);
-}
-
 void taihenReloadConfig() {
 	taiReloadConfig();
 	infoDialog(language_container[HENKAKU_RELOAD_CONFIG_MESSAGE]);
@@ -172,39 +153,6 @@ void openSettingsMenu() {
 	settings_menu.entry_sel = 0;
 	settings_menu.option_sel = 0;
 
-	if (is_molecular_shell) {
-		memset(&henkaku_config, 0, sizeof(HENkakuConfig));
-		int res = ReadFile(henkaku_config_path, &henkaku_config, sizeof(HENkakuConfig));
-
-		if (res != sizeof(HENkakuConfig) || henkaku_config.magic != HENKAKU_CONFIG_MAGIC || henkaku_config.version != HENKAKU_VERSION) {
-			memset(&henkaku_config, 0, sizeof(HENkakuConfig));
-			henkaku_config.use_psn_spoofing = 1;
-			henkaku_config.use_spoofed_version = 1;
-		}
-
-		char a = (henkaku_config.spoofed_version >> 24) & 0xF;
-		char b = (henkaku_config.spoofed_version >> 20) & 0xF;
-		char c = (henkaku_config.spoofed_version >> 16) & 0xF;
-		char d = (henkaku_config.spoofed_version >> 12) & 0xF;
-
-		memset(spoofed_version, 0, sizeof(spoofed_version));
-
-		if (a || b || c || d) {
-			spoofed_version[0] = '0' + a;
-			spoofed_version[1] = '.';
-			spoofed_version[2] = '0' + b;
-			spoofed_version[3] = '0' + c;
-			spoofed_version[4] = '\0';
-
-			if (d) {
-				spoofed_version[4] = '0' + d;
-				spoofed_version[5] = '\0';
-			}
-		} else {
-			strcpy(spoofed_version, HENKAKU_DEFAULT_VERSION_STRING);
-		}
-	}
-
 	changed = 0;
 }
 
@@ -212,26 +160,6 @@ void closeSettingsMenu() {
 	settings_menu.status = SETTINGS_MENU_CLOSING;
 
 	if (changed) {
-		if (is_molecular_shell) {
-			if (IS_DIGIT(spoofed_version[0]) && spoofed_version[1] == '.' && IS_DIGIT(spoofed_version[2]) && IS_DIGIT(spoofed_version[3])) {
-				char a = spoofed_version[0] - '0';
-				char b = spoofed_version[2] - '0';
-				char c = spoofed_version[3] - '0';
-				char d = IS_DIGIT(spoofed_version[4]) ? spoofed_version[4] - '0' : '\0';
-
-				henkaku_config.spoofed_version = ((a << 24) | (b << 20) | (c << 16) | (d << 12));
-			} else {
-				henkaku_config.spoofed_version = 0;
-			}
-
-			henkaku_config.magic = HENKAKU_CONFIG_MAGIC;
-			henkaku_config.version = HENKAKU_VERSION;
-
-			WriteFile(henkaku_config_path, &henkaku_config, sizeof(HENkakuConfig));
-
-			henkaku_reload_config();
-		}
-
 		saveSettingsConfig();
 	}
 }
@@ -323,32 +251,19 @@ void settingsMenuCtrl() {
 	// Agreement
 	if (agreement != SETTINGS_AGREEMENT_NONE) {
 		agreement = SETTINGS_AGREEMENT_NONE;
-
-		if (option->name == HENKAKU_ENABLE_UNSAFE_HOMEBREW) {
-			*(option->value) = !*(option->value);
-		}
 	}
 
 	// Change options
 	if (pressed_buttons & (SCE_CTRL_ENTER | SCE_CTRL_LEFT | SCE_CTRL_RIGHT)) {
 		changed = 1;
 
-		if (option->name == HENKAKU_ENABLE_UNSAFE_HOMEBREW) {
-			if (*(option->value) == 0) {
-				initMessageDialog(SCE_MSG_DIALOG_BUTTON_TYPE_OK, language_container[HENKAKU_UNSAFE_HOMEBREW_MESSAGE]);
-				dialog_step = DIALOG_STEP_SETTINGS_AGREEMENT;
-			} else {
-				*(option->value) = !*(option->value);
-			}
-		} else {
-			if (option->type == SETTINGS_OPTION_TYPE_BOOLEAN) {
-				*(option->value) = !*(option->value);
-			} else if (option->type == SETTINGS_OPTION_TYPE_STRING) {
-				initImeDialog(language_container[option->name], option->string, option->size_string, SCE_IME_TYPE_EXTENDED_NUMBER, 0);
-				dialog_step = DIALOG_STEP_SETTINGS_STRING;
-			} else if (option->type == SETTINGS_OPTION_TYPE_CALLBACK) {
-				option->callback(&option);
-			}
+		if (option->type == SETTINGS_OPTION_TYPE_BOOLEAN) {
+			*(option->value) = !*(option->value);
+		} else if (option->type == SETTINGS_OPTION_TYPE_STRING) {
+			initImeDialog(language_container[option->name], option->string, option->size_string, SCE_IME_TYPE_EXTENDED_NUMBER, 0);
+			dialog_step = DIALOG_STEP_SETTINGS_STRING;
+		} else if (option->type == SETTINGS_OPTION_TYPE_CALLBACK) {
+			option->callback(&option);
 		}
 	}
 

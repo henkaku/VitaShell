@@ -20,6 +20,8 @@
 #define __VITASHELL_CONFIGURATION_H__
 
 typedef struct {
+	int usbdevice;
+	int select_button;
 	int disable_autoupdate;
 } VitaShellConfig;
 

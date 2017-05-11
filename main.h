@@ -209,10 +209,9 @@ enum DialogSteps {
 extern vita2d_pgf *font;
 extern char font_size_cache[256];
 
-extern VitaShellConfig vitashell_config;
+extern char vitashell_titleid[12];
 
-extern char henkaku_config_path[32];
-extern char henkaku_first_boot_path[32];
+extern VitaShellConfig vitashell_config;
 
 extern int is_safe_mode, is_molecular_shell;
 

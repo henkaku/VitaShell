@@ -75,10 +75,9 @@ int dir_level_archive = -1;
 static char vita_ip[16];
 static unsigned short int vita_port;
 
-VitaShellConfig vitashell_config;
+char vitashell_titleid[12];
 
-char henkaku_config_path[32];
-char henkaku_first_boot_path[32];
+VitaShellConfig vitashell_config;
 
 int is_safe_mode = 0, is_molecular_shell = 0;
 
@@ -1929,22 +1928,14 @@ int main(int argc, const char *argv[]) {
 	initVitaShell();
 
 	// Get titleid
-	char titleid[12];
-	memset(titleid, 0, sizeof(titleid));
-	sceAppMgrAppParamGetString(sceKernelGetProcessId(), 12, titleid, sizeof(titleid));
+	memset(vitashell_titleid, 0, sizeof(vitashell_titleid));
+	sceAppMgrAppParamGetString(sceKernelGetProcessId(), 12, vitashell_titleid, sizeof(vitashell_titleid));
 
 	// Allow writing to ux0:app/VITASHELL
 	sceAppMgrUmount("app0:");
 
 	// Is molecularShell
-	if (strcmp(titleid, "MLCL00001") == 0) {
-		// HENkaku config path (ux0:temp/app_work/MLCL00001/rec/config.bin)
-		char mount_point[16];
-		memset(mount_point, 0, sizeof(mount_point));
-		sceAppMgrWorkDirMountById(207, titleid, mount_point);
-		sprintf(henkaku_config_path, "%s/config.bin", mount_point);
-		sprintf(henkaku_first_boot_path, "%s/first_boot.bin", mount_point);
-
+	if (strcmp(vitashell_titleid, "MLCL00001") == 0) {
 		is_molecular_shell = 1;
 	}
 
