@@ -48,6 +48,7 @@
 
 int taiReloadConfig();
 
+void openSettingsApplication();
 void taihenReloadConfig();
 void rebootDevice();
 void shutdownDevice();
@@ -67,6 +68,7 @@ static ConfigEntry settings_entries[] = {
 };
 
 SettingsMenuOption henkaku_settings[] = {
+	{ HENKAKU_OPEN_SETTINGS, SETTINGS_OPTION_TYPE_CALLBACK, (void *)openSettingsApplication, NULL, 0, NULL },
 	{ HENKAKU_RELOAD_CONFIG, SETTINGS_OPTION_TYPE_CALLBACK, (void *)taihenReloadConfig, NULL, 0, NULL },
 };
 
@@ -124,6 +126,11 @@ void shutdownDevice() {
 void suspendDevice() {
 	closeSettingsMenu();
 	scePowerRequestSuspend();
+}
+
+void openSettingsApplication() {
+	closeSettingsMenu();
+	sceAppMgrLaunchAppByUri(0xFFFFF, "settings_dlg:");
 }
 
 void taihenReloadConfig() {

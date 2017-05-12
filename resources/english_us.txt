@@ -108,6 +108,7 @@ HASH_FILE_QUESTION                   = "SHA1 hashing may take a long time. Conti
 
 # HENkaku settings strings
 HENKAKU_SETTINGS                     = "HENkaku settings"
+HENKAKU_OPEN_SETTINGS                = "Configure HENkaku in Settings application"
 HENKAKU_RELOAD_CONFIG                = "Reload taiHEN config.txt"
 HENKAKU_RELOAD_CONFIG_MESSAGE        = "taiHEN config.txt has been successfully reloaded."
 HENKAKU_FIRST_BOOT_MESSAGE           = "Welcome to HENkaku!\\To enable unrestricted file access, plugins,\and dangerous apps, you must enable unsafe mode\from the official Settings Application.\\If you do not know what this means,\ignore this message and your Vita will be safe."
